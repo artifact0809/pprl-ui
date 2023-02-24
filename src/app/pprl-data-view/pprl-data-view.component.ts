@@ -1,25 +1,13 @@
 import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
+import { TransformerService } from '../shared/transformer.service';
 
 export interface CSVElement {
   firstName: string;
   id: number;
   lastName: string;
   gender: string;
-  birthday: string;
+  birthDate: string;
 }
-
-const ELEMENT_DATA: CSVElement[] = [
-  {id: 1, firstName: 'Hydrogen', lastName: "Mustermann", gender: 'Male', birthday: '1990-08-09'},
-  {id: 2, firstName: 'Helium', lastName: "Mustermann", gender: 'Female', birthday: '1990-08-09'},
-  {id: 3, firstName: 'Lithium', lastName: "Mustermann", gender: 'Male', birthday: '1990-08-09'},
-  {id: 4, firstName: 'Beryllium', lastName: "Mustermann", gender: 'Female', birthday: '1990-08-09'},
-  {id: 5, firstName: 'Boron', lastName: "Mustermann", gender: 'Female', birthday: '1990-08-09'},
-  {id: 6, firstName: 'Carbon', lastName: "Mustermann", gender: 'Male', birthday: '1990-08-09'},
-  {id: 7, firstName: 'Nitrogen', lastName: "Mustermann", gender: 'Female', birthday: '1990-08-09'},
-  {id: 8, firstName: 'Oxygen', lastName: "Mustermann", gender: 'Female', birthday: '1990-08-09'},
-  {id: 9, firstName: 'Fluorine', lastName: "Mustermann", gender: 'Male', birthday: '1990-08-09'},
-  {id: 10, firstName: 'Neon', lastName: "Mustermann", gender: 'Female', birthday: '1990-08-09'},
-];
 
 @Component({
   selector: 'app-pprl-data-view',
@@ -28,37 +16,102 @@ const ELEMENT_DATA: CSVElement[] = [
 })
 export class PprlDataViewComponent implements OnInit {
 
-  constructor() { }
+  constructor(
+    private transformerService: TransformerService
+  ) {}
 
   @ViewChild('fileInput') fileInput: ElementRef;
   fileAttr = 'No file selected';
-  displayedColumns: string[] = ['id', 'firstName', 'lastName', 'gender', 'birthday'];
-  dataSource = ELEMENT_DATA;
+  displayedColumns: string[] = ['id', 'firstName', 'lastName', 'gender', 'birthDate'];
+  dataSource: CSVElement[] = [];
+  loading = false;
+  transformed = false;
 
   ngOnInit(): void {
+
   }
 
-  uploadFileEvt(imgFile: any) {
-    if (imgFile.target.files && imgFile.target.files[0]) {
-      this.fileAttr = '';
-      Array.from(imgFile.target.files).forEach((file: any) => {
-        this.fileAttr += file.name + ' - ';
-      });
-      // HTML5 FileReader API
-      let reader = new FileReader();
+  uploadFileEvt(file: any) {
+    if (file.target.files && file.target.files[0] && file.target.files.length == 1) {
+      this.fileAttr = file.target.files[0].name;
+      const reader = new FileReader();
       reader.onload = (e: any) => {
-        let image = new Image();
-        image.src = e.target.result;
-        image.onload = (rs) => {
-          let imgBase64Path = e.target.result;
-        };
+        this.dataSource = [];
+        let result = e.target.result;
+        const list: string[] = result.split('\n');
+        list.shift();
+        list.forEach( e => {
+          var entries = e.split(',');
+          if (entries.length === 5) {
+            this.dataSource.push({id: +entries[0], firstName: entries[1], lastName: entries[2], gender: entries[3], birthDate: entries[4]});
+          }
+        });
+        this.transformed = false;
       };
-      reader.readAsDataURL(imgFile.target.files[0]);
-      // Reset if duplicate image uploaded again
+      reader.readAsText(file.target.files[0]);
       this.fileInput.nativeElement.value = '';
     } else {
       this.fileAttr = 'No file selected';
     }
+  }
+
+  resetUploadedFile() {
+    this.dataSource = [];
+    this.fileAttr = 'No file selected';
+  }
+
+  transformData(data: Array<CSVElement>) {
+    this.loading = true;
+    setTimeout(() => this.loading = false, 2000);
+    this.transformerService.transformData(data).subscribe({
+      next: (data) => {
+        this.dataSource = [];
+        this.dataSource = data.entities;
+        this.loading = false;
+        this.transformed = true;
+      },
+      error: (error) => {
+        this.loading = false;
+      }
+    });
+  }
+
+  saveDateToCSV(data: Array<any>) {
+      if (data.length == 0) {
+        return '';
+      }
+
+      let propertyNames = Object.keys(data[0]);
+      let rowWithPropertyNames = 'id,first_name,last_name,gender,birth_date\n';
+
+      let csvContent = rowWithPropertyNames;
+
+      let rows: string[] = [];
+
+      data.forEach((item) => {
+        let values: string[] = [];
+        propertyNames.forEach((key) => {
+          let val: any = item[key];;
+
+          if (val !== undefined && val !== null) {
+            val = new String(val);
+          } else {
+            val = '';
+          }
+          values.push(val);
+        })
+        rows.push(values.join(','));
+      });
+      csvContent += rows.join('\n');
+      let filename = 'pprl-transform-processed.csv';
+      let fileContent = csvContent;
+      const file = new Blob([fileContent], {type: "text/plain"});
+      const link = document.createElement("a");
+      link.href = URL.createObjectURL(file);
+      link.download = filename;
+      link.click();
+      link.remove();
+      return;
   }
 
 }

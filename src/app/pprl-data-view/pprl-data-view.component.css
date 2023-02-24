@@ -1,7 +1,31 @@
 .mat-form-field {
-    margin: 40px 20px;
+    margin: 20px 50px;
     width: 500px !important;
 }
+
+.uploader {
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.header {
+    font-size: 18px;
+    font-weight: bold;
+    margin: 30px 40px;
+}
+
+.header-content {
+    font-size: 14px;
+    margin-left: 40px;
+}
+
+.table-title {
+    margin-left: 40px;
+    margin-bottom: 10px;
+    font-size: 14px;
+    font-weight: bold;
+}
+
 .mat-toolbar-single-row {
     height: auto !important;
     background: transparent;
@@ -24,6 +48,40 @@
     position: absolute;
 }
 
+#transform {
+    margin-right: 20px;
+}
+
 table {
     width: 100%;
-  }
+}
+
+.table-container {
+    height: 60%;
+    width: 95%;
+    margin-left: auto;
+    margin-right: auto;
+    overflow: auto;
+}
+
+.table-container button {
+    width: 200px;
+    margin-right: 10px;
+}
+
+.spinner-container {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+  
+.button-container {
+    display: inline-block;
+    position: relative;
+} 

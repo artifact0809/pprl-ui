@@ -6,8 +6,11 @@ import { MatInputModule } from '@angular/material/input';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatToolbarModule } from '@angular/material/toolbar'; 
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner'
 import {MatTableModule} from '@angular/material/table'; 
 import { FormsModule } from '@angular/forms';
+import { MatTableExporterModule } from 'mat-table-exporter';
+
 const materialModules = [
   MatIconModule,
   MatButtonModule,
@@ -16,7 +19,9 @@ const materialModules = [
   MatProgressBarModule,
   MatToolbarModule,
   MatTableModule,
-  FormsModule
+  MatProgressSpinnerModule,
+  FormsModule,
+  MatTableExporterModule
 ];
 @NgModule({
   imports: [CommonModule, ...materialModules],
